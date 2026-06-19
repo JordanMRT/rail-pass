@@ -1,0 +1,1242 @@
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Mon Boarding Pass">
+<meta name="theme-color" content="#0D1B2A">
+<link rel="manifest" href="manifest.json">
+<title>Mon Boarding Pass</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="shortcut icon" type="image/png" href="favico.ico"/>
+<style>
+:root {
+  --navy:#0D1B2A; --navy-mid:#162236; --navy-light:#1E3250;
+  --accent:#5BC8F5; --accent-dim:#2A8BB5;
+  --tp:#FFFFFF; --ts:#8BAFC8; --tm:#4A6680;
+  --bd:rgba(91,200,245,0.15); --bs:rgba(91,200,245,0.3);
+  --fn:'Space Grotesk',sans-serif; --fm:'Space Mono',monospace;
+  --r:12px; --rs:8px;
+  --tab-h:64px;
+  --safe-b:env(safe-area-inset-bottom,0px);
+}
+* { box-sizing:border-box; margin:0; padding:0; }
+html,body { height:100%; overflow:hidden; }
+body { background:#0A1520; color:var(--tp); font-family:var(--fn); }
+
+/* ════════════════════════════════
+   DESKTOP LAYOUT (≥900px)
+════════════════════════════════ */
+@media(min-width:900px) {
+  .mobile-only { display:none !important; }
+  .desktop-app {
+    display:grid; grid-template-columns:1fr 1fr; height:100vh;
+  }
+}
+@media(max-width:899px) {
+  .desktop-only { display:none !important; }
+  .desktop-app { display:none !important; }
+}
+
+/* ── EDITOR PANEL (desktop) ── */
+.editor-panel {
+  background:var(--navy-mid);
+  border-right:1px solid var(--bd);
+  display:flex; flex-direction:column; overflow:hidden;
+}
+.panel-header {
+  padding:22px 28px 18px;
+  border-bottom:1px solid var(--bd);
+  display:flex; align-items:center; gap:12px; flex-shrink:0;
+}
+.panel-header h1 { font-size:16px; font-weight:600; }
+.panel-header span { font-size:13px; color:var(--tm); font-weight:400; }
+.editor-scroll {
+  flex:1; overflow-y:auto; padding:24px 28px;
+  display:flex; flex-direction:column; gap:26px;
+}
+.editor-scroll::-webkit-scrollbar { width:3px; }
+.editor-scroll::-webkit-scrollbar-thumb { background:var(--tm); border-radius:2px; }
+
+/* ── PREVIEW PANEL (desktop) ── */
+.preview-panel {
+  background:#080F18;
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  padding:40px 24px; gap:20px;
+}
+.preview-label {
+  font-size:10px; font-weight:500; letter-spacing:.1em;
+  text-transform:uppercase; color:var(--tm);
+}
+.phone-frame {
+  width:300px; background:#1A1A1A; border-radius:44px; padding:12px;
+  box-shadow:0 0 0 1.5px #333, 0 0 0 3px #1A1A1A, 0 40px 80px rgba(0,0,0,.7);
+}
+.phone-screen { background:#000; border-radius:36px; overflow:hidden; position:relative; }
+.phone-notch {
+  position:absolute; top:0; left:50%; transform:translateX(-50%);
+  width:80px; height:22px; background:#1A1A1A;
+  border-radius:0 0 14px 14px; z-index:10;
+}
+
+/* ════════════════════════════════
+   SHARED FORM STYLES
+════════════════════════════════ */
+.sec-title {
+  font-size:10px; font-weight:700; letter-spacing:.1em;
+  text-transform:uppercase; color:var(--accent); margin-bottom:12px;
+}
+.fg { display:flex; flex-direction:column; gap:10px; }
+.fr { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.f { display:flex; flex-direction:column; gap:5px; }
+.f label { font-size:11px; font-weight:500; color:var(--ts); letter-spacing:.03em; }
+.f input, .f select {
+  background:var(--navy); border:1px solid var(--bd); border-radius:var(--rs);
+  color:var(--tp); font-family:var(--fn); font-size:14px;
+  padding:10px 12px; outline:none; transition:border-color .2s; width:100%;
+  -webkit-appearance:none;
+}
+.f input:focus, .f select:focus { border-color:var(--accent-dim); }
+select option { background:var(--navy); }
+
+/* QR upload */
+.qr-zone {
+  background:var(--navy); border:1.5px dashed var(--bs);
+  border-radius:var(--r); padding:22px 20px; text-align:center;
+  cursor:pointer; transition:all .2s; position:relative;
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px;
+}
+.qr-zone.has-img { border-style:solid; border-color:var(--accent-dim); padding:12px; }
+.qr-zone input { position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%; }
+.qr-zone p { font-size:13px; color:var(--ts); }
+.qr-zone small { font-size:11px; color:var(--tm); }
+.qr-thumb { width:100px; height:100px; object-fit:contain; border-radius:6px; display:none; }
+.qr-zone.has-img .qr-thumb { display:block; }
+.qr-zone.has-img .qz-ph { display:none; }
+
+/* Logo */
+.logo-row { display:flex; align-items:center; gap:10px; }
+.logo-zone {
+  background:var(--navy); border:1px dashed var(--bs);
+  border-radius:var(--rs); padding:12px 14px; cursor:pointer;
+  display:flex; align-items:center; gap:10px;
+  position:relative; transition:border-color .2s; flex:1;
+}
+.logo-zone input { position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%; }
+.logo-thumb { width:32px; height:32px; object-fit:contain; border-radius:4px; display:none; }
+.logo-zone.has-logo .logo-thumb { display:block; }
+.logo-zt { font-size:12px; color:var(--ts); }
+.logo-remove {
+  background:rgba(255,80,80,.12); border:1px solid rgba(255,80,80,.25);
+  border-radius:var(--rs); color:#ff6b6b; font-family:var(--fn);
+  font-size:12px; font-weight:600; padding:10px 14px;
+  cursor:pointer; white-space:nowrap; flex-shrink:0;
+  display:none; transition:background .2s;
+}
+.logo-remove:hover { background:rgba(255,80,80,.22); }
+
+/* Color palette */
+.palette-field { display:flex; flex-direction:column; gap:6px; }
+.palette-field label { font-size:11px; font-weight:500; color:var(--ts); letter-spacing:.03em; }
+.color-grid { display:grid; grid-template-columns:repeat(6,1fr); gap:5px; }
+.color-swatch {
+  width:100%; aspect-ratio:1; border-radius:5px; cursor:pointer;
+  border:2px solid transparent; transition:transform .15s, border-color .15s; position:relative;
+}
+.color-swatch:hover { transform:scale(1.12); }
+.color-swatch.selected { border-color:#fff; transform:scale(1.08); }
+.color-swatch.selected::after {
+  content:''; position:absolute; inset:0; border-radius:3px;
+  box-shadow:inset 0 0 0 2px rgba(0,0,0,.3);
+}
+
+/* Save button */
+.save-btn {
+  background:var(--accent); color:var(--navy);
+  border:none; border-radius:var(--r);
+  font-family:var(--fn); font-size:15px; font-weight:700;
+  padding:15px; cursor:pointer; width:100%; transition:all .2s;
+}
+.save-btn:hover { background:#7dd8f9; }
+.save-btn:active { transform:scale(.98); }
+
+/* Scan hint */
+.scan-hint {
+  font-size:11px; color:var(--tm);
+  display:flex; align-items:center; gap:6px; font-family:var(--fm);
+}
+.sdot { width:6px; height:6px; border-radius:50%; background:var(--accent); animation:pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+/* ════════════════════════════════
+   WALLET PASS (shared)
+════════════════════════════════ */
+.wallet-pass {
+  width:100%;
+  padding:30px 18px 24px;
+  display:flex; flex-direction:column;
+  position:relative; user-select:none;
+  transition:filter .3s;
+}
+/* desktop needs min-height inside phone frame */
+.phone-screen .wallet-pass { min-height:540px; cursor:pointer; }
+
+.pass-sep { border:none; border-top:1px dashed rgba(255,255,255,.12); margin:12px 0; }
+.pass-header {
+  display:flex; justify-content:space-between; align-items:flex-start;
+  margin-bottom:18px; margin-top:8px;
+}
+.pass-logo-area { display:flex; align-items:center; gap:8px; }
+.pass-logo-img { height:26px; max-width:90px; object-fit:contain; border-radius:2px; }
+.pass-logo-text { font-size:13px; font-weight:700; letter-spacing:-.01em; }
+.pass-date-block { text-align:right; }
+.flabel {
+  font-size:8.5px; font-weight:700; letter-spacing:.09em;
+  text-transform:uppercase; display:block; margin-bottom:2px;
+}
+.fval { display:block; }
+.flg { font-size:19px; font-weight:700; font-family:var(--fm); }
+.fmd { font-size:12px; font-family:var(--fm); }
+.fname { font-size:14px; font-weight:600; letter-spacing:.02em; }
+.fsm { font-size:12px; font-weight:600; }
+.stations-row {
+  display:grid; grid-template-columns:1fr 44px 1fr;
+  align-items:center; gap:4px; margin-bottom:4px; min-height:52px;
+}
+.sname { font-size:12px; font-weight:600; line-height:1.25; word-break:break-word; }
+.sname.right { text-align:right; }
+.train-icon-cell { display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.times-row { display:grid; grid-template-columns:1fr 1fr 1fr; gap:4px; align-items:start; }
+.tc { text-align:center; } .tr { text-align:right; }
+.pax-row { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.extra-row { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:8px; }
+.qr-section { display:flex; justify-content:center; margin-top:auto; padding-top:8px; }
+.qr-box {
+  background:white; border-radius:10px; padding:10px;
+  width:170px; height:170px;
+  display:flex; align-items:center; justify-content:center;
+}
+.qr-box img { width:100%; height:100%; object-fit:contain; }
+.qr-ph { display:flex; flex-direction:column; align-items:center; gap:5px; }
+.qr-ph span { font-size:9px; color:#999; text-align:center; }
+
+/* ════════════════════════════════
+   MOBILE APP
+════════════════════════════════ */
+.mobile-app {
+  display:flex; flex-direction:column;
+  height:100vh; height:100dvh;
+  position:relative; overflow:hidden;
+}
+
+/* Tab bar */
+.tab-bar {
+  position:absolute; bottom:0; left:0; right:0;
+  height:calc(var(--tab-h) + var(--safe-b));
+  background:rgba(13,27,42,0.95);
+  backdrop-filter:blur(20px);
+  border-top:1px solid var(--bd);
+  display:flex; align-items:flex-start; justify-content:space-around;
+  padding-top:8px;
+  z-index:100;
+  flex-shrink:0;
+}
+.tab-btn {
+  display:flex; flex-direction:column; align-items:center; gap:4px;
+  background:none; border:none; cursor:pointer;
+  padding:4px 20px;
+  color:var(--tm); font-family:var(--fn);
+  transition:color .2s;
+  -webkit-tap-highlight-color:transparent;
+}
+.tab-btn.active { color:var(--accent); }
+.tab-btn svg { transition:transform .2s; }
+.tab-btn.active svg { transform:scale(1.08); }
+.tab-btn span { font-size:10px; font-weight:600; letter-spacing:.03em; }
+
+/* Tab btn: add pass */
+.tab-btn-add {
+  background:var(--accent); color:var(--navy) !important;
+  border-radius:50%; width:48px; height:48px;
+  display:flex; align-items:center; justify-content:center;
+  border:none; cursor:pointer; margin-top:-10px;
+  box-shadow:0 4px 16px rgba(91,200,245,.4);
+  -webkit-tap-highlight-color:transparent;
+  flex-shrink:0;
+}
+
+/* Views container */
+.views {
+  flex:1;
+  overflow:hidden;
+  padding-bottom:calc(var(--tab-h) + var(--safe-b));
+  position:relative;
+}
+
+/* Each view */
+.view {
+  position:absolute; inset:0;
+  display:none; flex-direction:column;
+  overflow:hidden;
+}
+.view.active { display:flex; }
+
+/* ── VIEW: WALLET (mes pass) ── */
+#viewWallet {
+  background:#080F18;
+  align-items:center;
+}
+
+.wallet-topbar {
+  width:100%; padding:16px 20px 8px;
+  padding-top:calc(16px + env(safe-area-inset-top,0px));
+  flex-shrink:0;
+}
+.wallet-topbar h2 { font-size:20px; font-weight:700; letter-spacing:-.02em; }
+.wallet-topbar p { font-size:12px; color:var(--tm); margin-top:2px; }
+
+/* Empty state */
+.empty-state {
+  flex:1; display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  gap:16px; padding:40px 32px; text-align:center;
+}
+.empty-state svg { opacity:.3; }
+.empty-state h3 { font-size:18px; font-weight:600; }
+.empty-state p { font-size:14px; color:var(--tm); line-height:1.6; }
+.empty-cta {
+  background:var(--accent); color:var(--navy);
+  border:none; border-radius:50px;
+  font-family:var(--fn); font-size:14px; font-weight:700;
+  padding:14px 32px; cursor:pointer; margin-top:4px;
+  -webkit-tap-highlight-color:transparent;
+}
+
+/* Stack de pass style Apple Wallet */
+.passes-stack {
+  flex:1; width:100%; overflow:hidden;
+  position:relative; padding:0 20px;
+}
+.stack-inner {
+  position:relative; width:100%; height:100%;
+}
+.pass-card-wrap {
+  position:absolute; left:0; right:0;
+  transition:top .35s cubic-bezier(.34,1.2,.64,1);
+  cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+}
+.pass-card-wrap .wallet-pass {
+  border-radius:20px;
+  box-shadow:0 12px 40px rgba(0,0,0,.6), 0 0 0 1px rgba(255,255,255,.06);
+  overflow:hidden;
+}
+/* Collapsed: show only top strip */
+.pass-card-wrap.collapsed .wallet-pass {
+  overflow:hidden;
+}
+/* Active (expanded to top): full card visible */
+
+/* Delete badge */
+.pass-delete-btn {
+  position:absolute; top:8px; right:8px; z-index:10;
+  background:rgba(255,60,60,.85); color:#fff;
+  border:none; border-radius:50%; width:26px; height:26px;
+  font-size:14px; cursor:pointer; display:none;
+  align-items:center; justify-content:center;
+  -webkit-tap-highlight-color:transparent;
+}
+.pass-card-wrap.edit-mode .pass-delete-btn { display:flex; }
+.pass-card-wrap.edit-mode .wallet-pass { opacity:.85; }
+
+.stack-hint {
+  position:absolute; bottom:12px; left:0; right:0;
+  text-align:center; font-size:11px; color:var(--tm);
+  font-family:var(--fm); pointer-events:none;
+}
+
+/* Manage bar */
+.manage-bar {
+  width:100%; padding:8px 20px 4px;
+  display:flex; justify-content:flex-end; flex-shrink:0;
+}
+.manage-btn {
+  background:none; border:none; color:var(--accent);
+  font-family:var(--fn); font-size:13px; font-weight:600;
+  cursor:pointer; padding:4px 8px;
+  -webkit-tap-highlight-color:transparent;
+}
+
+/* ── VIEW: EDITOR (créer/éditer) ── */
+#viewEditor {
+  background:var(--navy-mid);
+}
+.editor-mob-header {
+  padding:16px 20px 14px;
+  padding-top:calc(16px + env(safe-area-inset-top,0px));
+  border-bottom:1px solid var(--bd);
+  display:flex; align-items:center; justify-content:space-between;
+  flex-shrink:0;
+}
+.editor-mob-header h2 { font-size:17px; font-weight:700; }
+.header-pass-count {
+  font-size:12px; color:var(--tm); font-weight:500;
+}
+.editor-mob-scroll {
+  flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch;
+  padding:20px; display:flex; flex-direction:column; gap:22px;
+}
+.editor-mob-scroll::-webkit-scrollbar { display:none; }
+
+/* ── FULLSCREEN SCAN OVERLAY ── */
+#scanOverlay {
+  position:fixed; inset:0; z-index:500;
+  display:none; flex-direction:column;
+  align-items:center; justify-content:center;
+  background:#000;
+}
+#scanOverlay.active { display:flex; }
+#scanOverlay .wallet-pass {
+  width:calc(100% - 32px); max-width:420px;
+  border-radius:20px;
+  box-shadow:0 24px 80px rgba(0,0,0,.8);
+  transition:filter .3s;
+}
+#scanOverlay .wallet-pass.scanning { filter:brightness(1.9) saturate(.3); }
+.scan-overlay-hint {
+  margin-top:20px; font-size:12px; color:rgba(255,255,255,.4);
+  font-family:var(--fm); display:flex; align-items:center; gap:8px;
+}
+.scan-close {
+  position:absolute; top:calc(16px + env(safe-area-inset-top,0px)); right:20px;
+  background:rgba(255,255,255,.1); border:none; border-radius:50%;
+  width:36px; height:36px; color:#fff; font-size:18px;
+  display:flex; align-items:center; justify-content:center;
+  cursor:pointer; -webkit-tap-highlight-color:transparent;
+}
+</style>
+</head>
+<body>
+
+<!-- ════════════════ DESKTOP ════════════════ -->
+<div class="desktop-app desktop-only">
+  <!-- Editor -->
+  <div class="editor-panel">
+    <div class="panel-header">
+      <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+        <rect width="28" height="28" rx="7" fill="#5BC8F5" opacity=".15"/>
+        <path d="M7 10h14M7 14h14M7 18h8" stroke="#5BC8F5" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+      <h1>Mon Boarding Pass <span>- Mode édition</span></h1>
+    </div>
+    <div class="editor-scroll" id="desktopEditorScroll">
+      <!-- form injected by JS -->
+    </div>
+  </div>
+  <!-- Preview -->
+  <div class="preview-panel">
+    <div class="preview-label">Aperçu en temps réel</div>
+    <div class="phone-frame">
+      <div class="phone-screen">
+        <div class="phone-notch"></div>
+        <div class="wallet-pass" id="desktopPass" onclick="desktopToggleScan()">
+          <!-- rendered by JS -->
+        </div>
+      </div>
+    </div>
+    <div class="scan-hint" id="desktopScanHint">
+      <div class="sdot"></div> Clique sur le pass pour le mode scan
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════ MOBILE ════════════════ -->
+<div class="mobile-app mobile-only">
+
+  <!-- Views -->
+  <div class="views">
+
+    <!-- VIEW: Mes pass -->
+    <div class="view active" id="viewWallet">
+      <div class="wallet-topbar">
+        <h2>Mes pass</h2>
+        <p id="passCountLabel">Aucun pass enregistré</p>
+      </div>
+      <div class="manage-bar" id="manageBar" style="display:none;">
+        <button class="manage-btn" id="manageBtnToggle" onclick="toggleEditMode()">Gérer</button>
+      </div>
+      <!-- Empty state -->
+      <div class="empty-state" id="emptyState">
+        <svg width="72" height="72" viewBox="0 0 72 72" fill="none">
+          <rect x="8" y="14" width="56" height="44" rx="9" stroke="#5BC8F5" stroke-width="1.5"/>
+          <line x1="8" y1="28" x2="64" y2="28" stroke="#5BC8F5" stroke-width="1" stroke-dasharray="5 4"/>
+          <rect x="24" y="38" width="24" height="12" rx="3" stroke="#5BC8F5" stroke-width="1.3"/>
+        </svg>
+        <h3>Aucun pass</h3>
+        <p>Crée ton premier pass de transport pour le retrouver ici.</p>
+        <button class="empty-cta" onclick="switchTab('editor')">Créer mon premier pass</button>
+      </div>
+      <!-- Stack -->
+      <div class="passes-stack" id="passesStack" style="display:none;">
+        <div class="stack-inner" id="stackInner"></div>
+        <div class="stack-hint" id="stackHint">Appuie sur un pass pour l'afficher</div>
+      </div>
+    </div>
+
+    <!-- VIEW: Éditeur -->
+    <div class="view" id="viewEditor">
+      <div class="editor-mob-header">
+        <h2 id="editorMobTitle">Nouveau pass</h2>
+        <span class="header-pass-count" id="editorPassCount"></span>
+      </div>
+      <div class="editor-mob-scroll" id="mobEditorScroll">
+        <!-- form injected by JS -->
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Tab Bar -->
+  <div class="tab-bar">
+    <button class="tab-btn active" id="tabWallet" onclick="switchTab('wallet')">
+      <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+        <rect x="2" y="5" width="18" height="14" rx="3" stroke="currentColor" stroke-width="1.4"/>
+        <line x1="2" y1="10" x2="20" y2="10" stroke="currentColor" stroke-width="1.4"/>
+        <rect x="5" y="13" width="5" height="3" rx="1" fill="currentColor" opacity=".5"/>
+      </svg>
+      <span>Mes pass</span>
+    </button>
+    <button class="tab-btn-add" onclick="newPass()" title="Nouveau pass">
+      <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+        <line x1="11" y1="4" x2="11" y2="18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <line x1="4" y1="11" x2="18" y2="11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+    </button>
+    <button class="tab-btn" id="tabEditor" onclick="switchTab('editor')">
+      <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+        <path d="M15 3L19 7L8 18H4V14L15 3Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
+      </svg>
+      <span>Éditer</span>
+    </button>
+  </div>
+</div>
+
+<!-- ════════════════ SCAN OVERLAY ════════════════ -->
+<div id="scanOverlay">
+  <button class="scan-close" onclick="closeScan()">✕</button>
+  <div class="wallet-pass" id="overlayPass" onclick="toggleOverlayScan()">
+    <!-- rendered by JS -->
+  </div>
+  <div class="scan-overlay-hint" id="overlayHint">
+    <div class="sdot"></div> Appuie pour activer le mode scan
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+//  PALETTE
+// ═══════════════════════════════════════════════════════
+const PALETTES = {
+  bg: [
+    '#0D1B2A','#0F2137','#1A1A2E','#162236','#1C2B3A','#0A0A12',
+    '#1E0A2E','#2A0A0A','#0A2010','#1A1400','#2A1A08','#1A2A1A',
+    '#2C2C2C','#1A1A1A','#111111','#0A0A0A','#222233','#332222',
+    '#FFFFFF','#F5F5F0','#EEF0F5','#F0EEE8','#E8F0EE','#F0E8E8',
+    '#DBEAFE','#FEF3C7','#D1FAE5','#FCE7F3','#E0E7FF','#FEE2E2',
+    '#1E3A5F','#3D1A00','#003D1A','#1A003D','#3D3D00','#003D3D',
+  ],
+  accent: [
+    '#5BC8F5','#38BDF8','#60A5FA','#34D399','#F59E0B','#F87171',
+    '#A78BFA','#FB7185','#2DD4BF','#FCD34D','#86EFAC','#FDA4AF',
+    '#FFFFFF','#E0F2FE','#BAE6FD','#7DD3FC','#0EA5E9','#0284C7',
+    '#FF6B6B','#FF8E53','#FFD93D','#6BCB77','#4D96FF','#C77DFF',
+    '#F0A500','#00C2A0','#FF4FA3','#00B4D8','#B5838D','#6D6875',
+    '#E9C46A','#F4A261','#E76F51','#264653','#2A9D8F','#457B9D',
+  ],
+  text: [
+    '#FFFFFF','#F8FAFC','#F1F5F9','#E2E8F0','#CBD5E1','#94A3B8',
+    '#0D1B2A','#1E293B','#334155','#475569','#64748B','#1A1A1A',
+    '#5BC8F5','#38BDF8','#60A5FA','#34D399','#F59E0B','#F87171',
+    '#FEF3C7','#D1FAE5','#DBEAFE','#FCE7F3','#E0E7FF','#FEE2E2',
+    '#A78BFA','#FB7185','#2DD4BF','#FCD34D','#86EFAC','#FDA4AF',
+    '#FFD93D','#6BCB77','#4D96FF','#FF6B6B','#FF8E53','#C77DFF',
+  ]
+};
+
+// ═══════════════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════════════
+let passes = [];          // array of pass objects, max 10
+let currentEditId = null; // id of pass being edited (null = new)
+let editMode = false;     // stack edit/delete mode
+let overlayScanActive = false;
+let desktopScanActive = false;
+let wakeLock = null;
+
+// Current editor state (for live preview on desktop)
+let editorState = defaultPass();
+
+function defaultPass() {
+  return {
+    id: Date.now(),
+    carrier: '', trainType: 'TER', customTrain: '',
+    trainNumber: '', origin: '', destination: '',
+    tripDate: '', departure: '', arrival: '',
+    lastName: '', firstName: '',
+    carriage: '', seat: '', classType: '', tariff: '',
+    selBg: '#0D1B2A', selAccent: '#5BC8F5', selText: '#FFFFFF',
+    qrSrc: '', logoSrc: '',
+    name: '' // auto-generated display name
+  };
+}
+
+// ═══════════════════════════════════════════════════════
+//  PASS HTML RENDERER
+// ═══════════════════════════════════════════════════════
+function passHTML(p, opts={}) {
+  const a = p.selAccent, t = p.selText;
+  const tl = p.trainType === 'custom' ? (p.customTrain || '—') : p.trainType;
+  const extras = [];
+  if(p.carriage)  extras.push({l:'VOITURE', val:p.carriage});
+  if(p.seat)      extras.push({l:'SIÈGE',   val:p.seat});
+  if(p.classType) extras.push({l:'CLASSE',  val:p.classType});
+  if(p.tariff)    extras.push({l:'TARIF',   val:p.tariff});
+  const extraH = extras.length ? `<div class="extra-row">${
+    extras.slice(0,2).map((x,i) => `<div${i?' style="text-align:right"':''}>
+      <span class="flabel" style="color:${a}${i?';text-align:right':''}">${x.l}</span>
+      <span class="fsm fval" style="color:${t}${i?';display:block;text-align:right':''}">${x.val}</span>
+    </div>`).join('')
+  }</div>` : '';
+
+  const logoH = p.logoSrc
+    ? `<img class="pass-logo-img" src="${p.logoSrc}" alt="">`
+    : `<span class="pass-logo-text" style="color:${t}">${p.carrier || 'Transporteur'}</span>`;
+
+  const qrH = p.qrSrc
+    ? `<img src="${p.qrSrc}" style="width:100%;height:100%;object-fit:contain;">`
+    : `<div class="qr-ph">
+        <svg width="56" height="56" viewBox="0 0 56 56" fill="none">
+          <rect x="4" y="4" width="18" height="18" rx="2.5" stroke="#aaa" stroke-width="1.5"/>
+          <rect x="10" y="10" width="6" height="6" fill="#aaa"/>
+          <rect x="34" y="4" width="18" height="18" rx="2.5" stroke="#aaa" stroke-width="1.5"/>
+          <rect x="40" y="10" width="6" height="6" fill="#aaa"/>
+          <rect x="4" y="34" width="18" height="18" rx="2.5" stroke="#aaa" stroke-width="1.5"/>
+          <rect x="10" y="40" width="6" height="6" fill="#aaa"/>
+          <rect x="34" y="34" width="6" height="6" fill="#aaa" opacity=".4"/>
+          <rect x="46" y="34" width="6" height="6" fill="#aaa" opacity=".4"/>
+          <rect x="34" y="46" width="6" height="6" fill="#aaa" opacity=".4"/>
+          <rect x="46" y="46" width="6" height="6" fill="#aaa" opacity=".4"/>
+        </svg>
+        <span>QR à importer</span>
+      </div>`;
+
+  const sepStyle = `border-top-color:${a}30`;
+
+  return `
+    <div class="pass-header">
+      <div class="pass-logo-area">${logoH}</div>
+      <div class="pass-date-block">
+        <span class="flabel" style="color:${a}">VOYAGE LE</span>
+        <span class="fval fmd" style="color:${t}">${p.tripDate || '—'}</span>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 44px 1fr;gap:4px;margin-bottom:4px;">
+      <span class="flabel" style="color:${a}">ORIGINE</span>
+      <span></span>
+      <span class="flabel" style="color:${a};text-align:right;display:block;">DESTINATION</span>
+    </div>
+    <div class="stations-row">
+      <span class="sname" style="color:${t}">${p.origin || '—'}</span>
+      <div class="train-icon-cell">
+        <svg width="40" height="40" viewBox="0 0 40 40" fill="none" style="color:${a}">
+          <rect x="8" y="4" width="24" height="22" rx="4.5" stroke="currentColor" stroke-width="1.4"/>
+          <rect x="11" y="8" width="18" height="10" rx="1.5" fill="currentColor" opacity=".65"/>
+          <circle cx="14" cy="22" r="1.6" fill="currentColor"/>
+          <circle cx="26" cy="22" r="1.6" fill="currentColor"/>
+          <line x1="15" y1="26" x2="10" y2="35" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+          <line x1="25" y1="26" x2="30" y2="35" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+          <line x1="12" y1="31" x2="28" y2="31" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <span class="sname right" style="color:${t}">${p.destination || '—'}</span>
+    </div>
+    <hr class="pass-sep" style="${sepStyle}">
+    <div class="times-row">
+      <div>
+        <span class="flabel" style="color:${a}">DÉPART</span>
+        <span class="fval flg" style="color:${t}">${p.departure || '—'}</span>
+      </div>
+      <div class="tc">
+        <span class="flabel" style="color:${a}">${tl}</span>
+        <span class="fval fmd" style="color:${t}">N° ${p.trainNumber || '—'}</span>
+      </div>
+      <div class="tr">
+        <span class="flabel" style="color:${a}">ARRIVÉE</span>
+        <span class="fval flg" style="color:${t}">${p.arrival || '—'}</span>
+      </div>
+    </div>
+    <hr class="pass-sep" style="${sepStyle}">
+    <div class="pax-row">
+      <div>
+        <span class="flabel" style="color:${a}">NOM</span>
+        <span class="fval fname" style="color:${t}">${p.lastName || '—'}</span>
+      </div>
+      <div style="text-align:right;">
+        <span class="flabel" style="color:${a}">PRÉNOM</span>
+        <span class="fval fname" style="color:${t}">${p.firstName || '—'}</span>
+      </div>
+    </div>
+    ${extraH}
+    <hr class="pass-sep" style="${sepStyle}">
+    <div class="qr-section">
+      <div class="qr-box">${qrH}</div>
+    </div>`;
+}
+
+// ═══════════════════════════════════════════════════════
+//  FORM HTML BUILDER
+// ═══════════════════════════════════════════════════════
+function buildFormHTML(containerId, saveCallback) {
+  const c = document.getElementById(containerId);
+  c.innerHTML = `
+    <!-- QR -->
+    <div>
+      <div class="sec-title">QR Code</div>
+      <div class="qr-zone" id="qrZone_${containerId}">
+        <input type="file" accept="image/*" onchange="handleQR(event,'${containerId}')">
+        <div class="qz-ph" style="display:flex;flex-direction:column;align-items:center;gap:8px;">
+          <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+            <rect x="3" y="3" width="12" height="12" rx="2" stroke="#5BC8F5" stroke-width="1.3"/>
+            <rect x="7" y="7" width="4" height="4" fill="#5BC8F5"/>
+            <rect x="21" y="3" width="12" height="12" rx="2" stroke="#5BC8F5" stroke-width="1.3"/>
+            <rect x="25" y="7" width="4" height="4" fill="#5BC8F5"/>
+            <rect x="3" y="21" width="12" height="12" rx="2" stroke="#5BC8F5" stroke-width="1.3"/>
+            <rect x="7" y="25" width="4" height="4" fill="#5BC8F5"/>
+            <rect x="21" y="21" width="4" height="4" fill="#5BC8F5" opacity=".5"/>
+            <rect x="29" y="21" width="4" height="4" fill="#5BC8F5" opacity=".5"/>
+            <rect x="21" y="29" width="4" height="4" fill="#5BC8F5" opacity=".5"/>
+            <rect x="29" y="29" width="4" height="4" fill="#5BC8F5" opacity=".5"/>
+          </svg>
+          <p>Importer le QR code</p><small>Capture d'écran ou photo</small>
+        </div>
+        <img class="qr-thumb" id="qrThumb_${containerId}" src="" alt="QR">
+      </div>
+    </div>
+    <!-- Identité -->
+    <div>
+      <div class="sec-title">Identité</div>
+      <div class="fg">
+        <div class="fr">
+          <div class="f"><label>Transporteur</label><input type="text" id="carrier_${containerId}" placeholder="SNCF Connect" oninput="syncField('carrier','${containerId}')"></div>
+          <div class="f"><label>Type de train</label>
+            <select id="trainType_${containerId}" onchange="syncTT('${containerId}')">
+              <option value="TER">TER</option>
+              <option value="TGV">TGV</option>
+              <option value="Intercités">Intercités</option>
+              <option value="Ouigo">Ouigo</option>
+              <option value="Eurostar">Eurostar</option>
+              <option value="custom">Personnalisé…</option>
+            </select>
+          </div>
+        </div>
+        <div class="fr" id="customRow_${containerId}" style="display:none;">
+          <div class="f"><label>Nom du service</label><input type="text" id="customTrain_${containerId}" placeholder="Ex : TGV Max" oninput="syncField('customTrain','${containerId}')"></div>
+        </div>
+        <div class="f"><label>N° de train</label><input type="text" id="trainNumber_${containerId}" placeholder="865024" oninput="syncField('trainNumber','${containerId}')"></div>
+      </div>
+    </div>
+    <!-- Trajet -->
+    <div>
+      <div class="sec-title">Trajet</div>
+      <div class="fg">
+        <div class="fr">
+          <div class="f"><label>Gare de départ</label><input type="text" id="origin_${containerId}" placeholder="MILLAU" oninput="syncField('origin','${containerId}')"></div>
+          <div class="f"><label>Gare d'arrivée</label><input type="text" id="destination_${containerId}" placeholder="BÉZIERS" oninput="syncField('destination','${containerId}')"></div>
+        </div>
+        <div class="f"><label>Date du voyage</label><input type="text" id="tripDate_${containerId}" placeholder="19/06/2026" oninput="syncField('tripDate','${containerId}')"></div>
+        <div class="fr">
+          <div class="f"><label>Départ</label><input type="text" id="departure_${containerId}" placeholder="12:09" oninput="syncField('departure','${containerId}')"></div>
+          <div class="f"><label>Arrivée</label><input type="text" id="arrival_${containerId}" placeholder="16:23" oninput="syncField('arrival','${containerId}')"></div>
+        </div>
+      </div>
+    </div>
+    <!-- Passager -->
+    <div>
+      <div class="sec-title">Passager</div>
+      <div class="fg">
+        <div class="fr">
+          <div class="f"><label>Nom</label><input type="text" id="lastName_${containerId}" placeholder="DURAND" oninput="syncField('lastName','${containerId}')"></div>
+          <div class="f"><label>Prénom</label><input type="text" id="firstName_${containerId}" placeholder="PIERRE" oninput="syncField('firstName','${containerId}')"></div>
+        </div>
+      </div>
+    </div>
+    <!-- Optionnels -->
+    <div>
+      <div class="sec-title">Champs optionnels</div>
+      <div class="fg">
+        <div class="fr">
+          <div class="f"><label>Voiture</label><input type="text" id="carriage_${containerId}" placeholder="Ex : 12" oninput="syncField('carriage','${containerId}')"></div>
+          <div class="f"><label>Siège</label><input type="text" id="seat_${containerId}" placeholder="Ex : 47" oninput="syncField('seat','${containerId}')"></div>
+        </div>
+        <div class="fr">
+          <div class="f"><label>Classe</label>
+            <select id="classType_${containerId}" onchange="syncField('classType','${containerId}')">
+              <option value="">—</option>
+              <option value="1re classe">1re classe</option>
+              <option value="2e classe">2nde classe</option>
+            </select>
+          </div>
+          <div class="f"><label>Tarif</label><input type="text" id="tariff_${containerId}" placeholder="Ex : Loisir" oninput="syncField('tariff','${containerId}')"></div>
+        </div>
+      </div>
+    </div>
+    <!-- Logo -->
+    <div>
+      <div class="sec-title">Logo (optionnel)</div>
+      <div class="logo-row">
+        <div class="logo-zone" id="logoZone_${containerId}">
+          <input type="file" accept="image/*" onchange="handleLogo(event,'${containerId}')">
+          <img class="logo-thumb" id="logoThumb_${containerId}" src="" alt="Logo">
+          <span class="logo-zt" id="logoTxt_${containerId}">Importer un logo · PNG, SVG</span>
+        </div>
+        <button class="logo-remove" id="logoRemoveBtn_${containerId}" onclick="removeLogo('${containerId}')">Retirer</button>
+      </div>
+    </div>
+    <!-- Couleurs -->
+    <div>
+      <div class="sec-title">Couleurs</div>
+      <div style="display:flex;flex-direction:column;gap:16px;">
+        <div class="palette-field"><label>Fond du pass</label><div class="color-grid" id="gridBg_${containerId}"></div></div>
+        <div class="palette-field"><label>Accent &amp; labels</label><div class="color-grid" id="gridAccent_${containerId}"></div></div>
+        <div class="palette-field"><label>Texte principal</label><div class="color-grid" id="gridText_${containerId}"></div></div>
+      </div>
+    </div>
+    <button class="save-btn" onclick="${saveCallback}">💾 Enregistrer ce pass</button>
+    <div style="height:16px;"></div>
+  `;
+  buildGridsFor(containerId);
+}
+
+function buildGridsFor(cid) {
+  ['Bg','Accent','Text'].forEach(key => {
+    const lk = key.toLowerCase();
+    const selKey = 'sel'+key;
+    const grid = document.getElementById('grid'+key+'_'+cid);
+    if(!grid) return;
+    const sel = editorState[selKey] || (lk==='bg'?'#0D1B2A':lk==='accent'?'#5BC8F5':'#FFFFFF');
+    PALETTES[lk].forEach(col => {
+      const sw = document.createElement('div');
+      sw.className = 'color-swatch' + (col===sel?' selected':'');
+      sw.style.background = col;
+      sw.title = col;
+      sw.onclick = () => {
+        grid.querySelectorAll('.color-swatch').forEach(s=>s.classList.remove('selected'));
+        sw.classList.add('selected');
+        editorState[selKey] = col;
+        renderAllPreviews();
+      };
+      grid.appendChild(sw);
+    });
+  });
+}
+
+// ═══════════════════════════════════════════════════════
+//  FIELD SYNC (editor → editorState → preview)
+// ═══════════════════════════════════════════════════════
+function syncField(field, cid) {
+  const el = document.getElementById(field+'_'+cid);
+  if(el) editorState[field] = el.value;
+  renderAllPreviews();
+}
+
+function syncTT(cid) {
+  const val = document.getElementById('trainType_'+cid)?.value;
+  editorState.trainType = val;
+  document.getElementById('customRow_'+cid).style.display = val==='custom'?'grid':'none';
+  renderAllPreviews();
+}
+
+function populateForm(cid, p) {
+  const fields = ['carrier','trainNumber','origin','destination','tripDate',
+    'departure','arrival','lastName','firstName','carriage','seat','tariff'];
+  fields.forEach(f => {
+    const el = document.getElementById(f+'_'+cid);
+    if(el) el.value = p[f] || '';
+  });
+  const ttEl = document.getElementById('trainType_'+cid);
+  if(ttEl) { ttEl.value = p.trainType||'TER'; syncTT(cid); }
+  const ctEl = document.getElementById('customTrain_'+cid);
+  if(ctEl) ctEl.value = p.customTrain||'';
+  const clEl = document.getElementById('classType_'+cid);
+  if(clEl) clEl.value = p.classType||'';
+  // QR
+  if(p.qrSrc) {
+    document.getElementById('qrThumb_'+cid).src = p.qrSrc;
+    document.getElementById('qrZone_'+cid).classList.add('has-img');
+  }
+  // Logo
+  if(p.logoSrc) {
+    document.getElementById('logoThumb_'+cid).src = p.logoSrc;
+    document.getElementById('logoZone_'+cid).classList.add('has-logo');
+    document.getElementById('logoTxt_'+cid).textContent = 'Logo chargé';
+    document.getElementById('logoRemoveBtn_'+cid).style.display = 'block';
+  }
+  // Colors
+  ['Bg','Accent','Text'].forEach(key => {
+    const lk = key.toLowerCase();
+    const col = p['sel'+key];
+    if(!col) return;
+    const grid = document.getElementById('grid'+key+'_'+cid);
+    if(!grid) return;
+    grid.querySelectorAll('.color-swatch').forEach(sw => {
+      sw.classList.toggle('selected', sw.title === col);
+    });
+  });
+}
+
+// ═══════════════════════════════════════════════════════
+//  RENDER PREVIEWS
+// ═══════════════════════════════════════════════════════
+function renderAllPreviews() {
+  // Desktop
+  const dp = document.getElementById('desktopPass');
+  if(dp) {
+    dp.style.background = editorState.selBg;
+    dp.style.color = editorState.selText;
+    dp.innerHTML = passHTML(editorState);
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+//  WALLET STACK RENDERING
+// ═══════════════════════════════════════════════════════
+const STRIP_H = 72; // px visible per collapsed card
+const EXPANDED_IDX = 0; // topmost card index always expanded
+
+function renderStack() {
+  const inner = document.getElementById('stackInner');
+  const hint  = document.getElementById('stackHint');
+  if(!inner) return;
+  inner.innerHTML = '';
+
+  if(!passes.length) {
+    document.getElementById('emptyState').style.display = 'flex';
+    document.getElementById('passesStack').style.display = 'none';
+    document.getElementById('manageBar').style.display = 'none';
+    document.getElementById('passCountLabel').textContent = 'Aucun pass enregistré';
+    return;
+  }
+
+  document.getElementById('emptyState').style.display = 'none';
+  document.getElementById('passesStack').style.display = 'block';
+  document.getElementById('manageBar').style.display = 'flex';
+  document.getElementById('passCountLabel').textContent =
+    passes.length === 1 ? '1 pass enregistré' : `${passes.length} pass enregistrés`;
+
+  // Layout: top card fully visible, others peek from below
+  const stackEl = document.getElementById('passesStack');
+  const totalH = stackEl.offsetHeight || window.innerHeight - 180;
+  const cardFullH = Math.min(totalH - (passes.length - 1) * STRIP_H, totalH * 0.8);
+
+  passes.forEach((p, i) => {
+    const wrap = document.createElement('div');
+    wrap.className = 'pass-card-wrap' + (editMode?' edit-mode':'');
+    wrap.id = 'card_'+p.id;
+
+    // Position: first card at top, others stacked below
+    const topPos = i === 0 ? 0 : cardFullH + (i - 1) * STRIP_H;
+    wrap.style.top = topPos + 'px';
+    wrap.style.zIndex = 10 + i;
+
+    const passDiv = document.createElement('div');
+    passDiv.className = 'wallet-pass';
+    passDiv.style.background = p.selBg;
+    passDiv.style.color = p.selText;
+    passDiv.innerHTML = passHTML(p);
+    passDiv.onclick = () => { if(!editMode) openScan(p); };
+
+    // Edit button on pass: tap to edit
+    const editBtn = document.createElement('button');
+    editBtn.style.cssText = 'position:absolute;top:8px;left:8px;z-index:10;background:rgba(91,200,245,.85);color:#0D1B2A;border:none;border-radius:50%;width:26px;height:26px;font-size:12px;cursor:pointer;display:none;align-items:center;justify-content:center;';
+    editBtn.innerHTML = `<svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M8.5 1.5L11.5 4.5L4 12H1V9L8.5 1.5Z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg>`;
+    editBtn.onclick = (e) => { e.stopPropagation(); editPass(p.id); };
+    if(editMode) editBtn.style.display = 'flex';
+    wrap.appendChild(editBtn);
+
+    // Delete btn
+    const delBtn = document.createElement('button');
+    delBtn.className = 'pass-delete-btn';
+    delBtn.innerHTML = '×';
+    delBtn.onclick = (e) => { e.stopPropagation(); deletePass(p.id); };
+    wrap.appendChild(delBtn);
+
+    wrap.appendChild(passDiv);
+    inner.appendChild(wrap);
+
+    // Tap on collapsed strip = bring to front
+    if(i > 0) {
+      wrap.onclick = (e) => {
+        if(editMode) return;
+        // Rotate: move this pass to front
+        const idx = passes.findIndex(x => x.id === p.id);
+        if(idx > 0) {
+          const moved = passes.splice(idx, 1)[0];
+          passes.unshift(moved);
+          renderStack();
+        }
+      };
+    }
+  });
+
+  if(passes.length === 1) hint.textContent = 'Appuie sur le pass pour l\'afficher';
+  else hint.textContent = 'Appuie sur un pass pour le sélectionner ou l\'afficher';
+}
+
+// ═══════════════════════════════════════════════════════
+//  EDIT MODE (delete)
+// ═══════════════════════════════════════════════════════
+function toggleEditMode() {
+  editMode = !editMode;
+  document.getElementById('manageBtnToggle').textContent = editMode ? 'Terminer' : 'Gérer';
+  renderStack();
+}
+
+// ═══════════════════════════════════════════════════════
+//  SCAN OVERLAY
+// ═══════════════════════════════════════════════════════
+function openScan(p) {
+  const overlay = document.getElementById('scanOverlay');
+  const op = document.getElementById('overlayPass');
+  op.style.background = p.selBg;
+  op.style.color = p.selText;
+  op.innerHTML = passHTML(p);
+  overlayScanActive = false;
+  overlay.classList.add('active');
+  document.getElementById('overlayHint').innerHTML =
+    '<div class="sdot"></div> Appuie pour activer le mode scan';
+  // WakeLock
+  if('wakeLock' in navigator) navigator.wakeLock.request('screen').then(wl => wakeLock=wl).catch(()=>{});
+}
+
+function closeScan() {
+  document.getElementById('scanOverlay').classList.remove('active');
+  document.getElementById('overlayPass').classList.remove('scanning');
+  overlayScanActive = false;
+  if(wakeLock) { wakeLock.release(); wakeLock=null; }
+}
+
+async function toggleOverlayScan() {
+  overlayScanActive = !overlayScanActive;
+  const op = document.getElementById('overlayPass');
+  const hint = document.getElementById('overlayHint');
+  if(overlayScanActive) {
+    op.classList.add('scanning');
+    hint.innerHTML = '<div class="sdot" style="background:#ff6b6b;animation:pulse 2s infinite"></div> Appuie pour quitter le mode scan';
+    if(screen&&'brightness' in screen) { try{ await screen.brightness.set(1.0); }catch(e){} }
+  } else {
+    op.classList.remove('scanning');
+    hint.innerHTML = '<div class="sdot"></div> Appuie pour activer le mode scan';
+    if(screen&&'brightness' in screen) { try{ await screen.brightness.set(0.5); }catch(e){} }
+  }
+}
+
+// Desktop scan
+async function desktopToggleScan() {
+  desktopScanActive = !desktopScanActive;
+  const dp = document.getElementById('desktopPass');
+  const hint = document.getElementById('desktopScanHint');
+  if(desktopScanActive) {
+    dp.classList.add('scanning');
+    hint.innerHTML = '<div class="sdot" style="background:#ff6b6b;animation:pulse 2s infinite"></div> Clique pour quitter le mode scan';
+    if('wakeLock' in navigator) { try{ wakeLock=await navigator.wakeLock.request('screen'); }catch(e){} }
+  } else {
+    dp.classList.remove('scanning');
+    hint.innerHTML = '<div class="sdot"></div> Clique sur le pass pour le mode scan';
+    if(wakeLock) { try{ await wakeLock.release(); wakeLock=null; }catch(e){} }
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+//  TAB SWITCHING
+// ═══════════════════════════════════════════════════════
+function switchTab(tab) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  if(tab === 'wallet') {
+    document.getElementById('viewWallet').classList.add('active');
+    document.getElementById('tabWallet').classList.add('active');
+    renderStack();
+  } else {
+    document.getElementById('viewEditor').classList.add('active');
+    document.getElementById('tabEditor').classList.add('active');
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+//  NEW / EDIT / DELETE PASS
+// ═══════════════════════════════════════════════════════
+function newPass() {
+  if(passes.length >= 10) {
+    alert('Maximum 10 pass — supprime un pass existant pour en créer un nouveau.');
+    return;
+  }
+  currentEditId = null;
+  editorState = defaultPass();
+  buildFormHTML('mobEditorScroll', 'savePassMob()');
+  document.getElementById('editorMobTitle').textContent = 'Nouveau pass';
+  document.getElementById('editorPassCount').textContent = passes.length + '/10';
+  renderAllPreviews();
+  switchTab('editor');
+}
+
+function editPass(id) {
+  const p = passes.find(x => x.id === id);
+  if(!p) return;
+  currentEditId = id;
+  editorState = {...p};
+  buildFormHTML('mobEditorScroll', 'savePassMob()');
+  populateForm('mobEditorScroll', p);
+  document.getElementById('editorMobTitle').textContent = 'Modifier le pass';
+  document.getElementById('editorPassCount').textContent = passes.length + '/10';
+  renderAllPreviews();
+  switchTab('editor');
+}
+
+function deletePass(id) {
+  passes = passes.filter(x => x.id !== id);
+  savePasses();
+  renderStack();
+  if(!passes.length) { editMode = false; document.getElementById('manageBtnToggle').textContent = 'Gérer'; }
+}
+
+function passName(p) {
+  if(p.origin && p.destination) return `${p.origin} → ${p.destination}`;
+  if(p.lastName) return p.lastName;
+  return 'Pass sans titre';
+}
+
+// ═══════════════════════════════════════════════════════
+//  SAVE (mobile)
+// ═══════════════════════════════════════════════════════
+function savePassMob() {
+  editorState.name = passName(editorState);
+  if(currentEditId !== null) {
+    const idx = passes.findIndex(x => x.id === currentEditId);
+    if(idx >= 0) passes[idx] = {...editorState, id: currentEditId};
+  } else {
+    editorState.id = Date.now();
+    passes.push({...editorState});
+  }
+  savePasses();
+  const btn = document.querySelector('#mobEditorScroll .save-btn');
+  if(btn) { btn.textContent='✓ Sauvegardé !'; setTimeout(()=>{ btn.textContent='💾 Enregistrer ce pass'; switchTab('wallet'); }, 900); }
+}
+
+// Desktop save
+function savePassDesktop() {
+  editorState.name = passName(editorState);
+  // update or add
+  if(currentEditId !== null) {
+    const idx = passes.findIndex(x => x.id === currentEditId);
+    if(idx >= 0) passes[idx] = {...editorState, id: currentEditId};
+  } else {
+    if(passes.length >= 10) { alert('Maximum 10 pass.'); return; }
+    editorState.id = Date.now();
+    passes.push({...editorState});
+    currentEditId = editorState.id;
+  }
+  savePasses();
+  const btn = document.querySelector('#desktopEditorScroll .save-btn');
+  if(btn) { btn.textContent='✓ Sauvegardé !'; setTimeout(()=>btn.textContent='💾 Enregistrer ce pass', 1600); }
+}
+
+// ═══════════════════════════════════════════════════════
+//  FILES
+// ═══════════════════════════════════════════════════════
+function handleQR(e, cid) {
+  const f=e.target.files[0]; if(!f) return;
+  const r=new FileReader();
+  r.onload=ev=>{
+    editorState.qrSrc = ev.target.result;
+    document.getElementById('qrThumb_'+cid).src = editorState.qrSrc;
+    document.getElementById('qrZone_'+cid).classList.add('has-img');
+    renderAllPreviews();
+  };
+  r.readAsDataURL(f);
+}
+function handleLogo(e, cid) {
+  const f=e.target.files[0]; if(!f) return;
+  const r=new FileReader();
+  r.onload=ev=>{
+    editorState.logoSrc = ev.target.result;
+    document.getElementById('logoThumb_'+cid).src = editorState.logoSrc;
+    document.getElementById('logoZone_'+cid).classList.add('has-logo');
+    document.getElementById('logoTxt_'+cid).textContent = f.name;
+    document.getElementById('logoRemoveBtn_'+cid).style.display = 'block';
+    renderAllPreviews();
+  };
+  r.readAsDataURL(f);
+}
+function removeLogo(cid) {
+  editorState.logoSrc = '';
+  document.getElementById('logoThumb_'+cid).src='';
+  document.getElementById('logoZone_'+cid).classList.remove('has-logo');
+  document.getElementById('logoTxt_'+cid).textContent='Importer un logo · PNG, SVG';
+  document.getElementById('logoRemoveBtn_'+cid).style.display='none';
+  renderAllPreviews();
+}
+
+// ═══════════════════════════════════════════════════════
+//  PERSISTENCE
+// ═══════════════════════════════════════════════════════
+function savePasses() {
+  localStorage.setItem('monpass_v4', JSON.stringify(passes));
+}
+function loadPasses() {
+  try {
+    const raw = localStorage.getItem('monpass_v4');
+    if(raw) passes = JSON.parse(raw);
+    // migrate old single-pass format
+    const oldRaw = localStorage.getItem('monpass_v3');
+    if(!passes.length && oldRaw) {
+      const old = JSON.parse(oldRaw);
+      old.id = old.id || Date.now();
+      old.name = passName(old);
+      passes = [old];
+      savePasses();
+    }
+  } catch(e) { passes = []; }
+}
+
+// ═══════════════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════════════
+function init() {
+  loadPasses();
+
+  // Desktop: build form + render preview
+  buildFormHTML('desktopEditorScroll', 'savePassDesktop()');
+  // If existing passes, load first into editor state for desktop
+  if(passes.length) {
+    editorState = {...passes[0]};
+    currentEditId = passes[0].id;
+    populateForm('desktopEditorScroll', editorState);
+  }
+  renderAllPreviews();
+
+  // Mobile: render stack
+  renderStack();
+
+  // PWA
+  window.addEventListener('beforeinstallprompt', e=>{ e.preventDefault(); window._dpi=e; });
+  if('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');
+}
+
+init();
+</script>
+</body>
+</html>
