@@ -176,7 +176,7 @@ select option { background:var(--navy); }
   box-shadow:0 12px 40px rgba(0,0,0,.7);
 }
 .color-popover.open { display:block; }
-.color-grid { display:grid; grid-template-columns:repeat(6,1fr); gap:5px; }
+.color-grid { display:grid; grid-template-columns:repeat(12,2fr); gap:3px; }
 .color-swatch {
   width:100%; aspect-ratio:1; border-radius:5px; cursor:pointer;
   border:2px solid transparent; transition:transform .12s, border-color .12s; position:relative;
@@ -272,7 +272,7 @@ select option { background:var(--navy); }
 /* Tab bar */
 .tab-bar {
   position:absolute; bottom:0; left:0; right:0;
-  height:calc(var(--tab-h) + var(--safe-b));
+  height:calc(var(--tab-h));
   background:rgba(13,27,42,0.95);
   backdrop-filter:blur(20px);
   border-top:1px solid var(--bd);
