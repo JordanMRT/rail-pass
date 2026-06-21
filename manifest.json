@@ -1,6 +1,6 @@
 {
-  "name": "MonPass — Billets de train",
-  "short_name": "MonPass",
+  "name": "Mon Boarding Pass - Billets de train",
+  "short_name": "Boarding Pass",
   "description": "Créateur de pass de train pour Apple Wallet",
   "start_url": "./index.html",
   "display": "standalone",
@@ -9,12 +9,12 @@
   "orientation": "portrait",
   "icons": [
     {
-      "src": "icon-192.png",
+      "src": "apple-icn.jpg",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "icon-512.png",
+      "src": "apple-icn.jpg",
       "sizes": "512x512",
       "type": "image/png"
     }
