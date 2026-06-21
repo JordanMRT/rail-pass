@@ -468,7 +468,7 @@ select option { background:var(--navy); }
 ════════════════════════════════ */
 .date-trigger, .time-trigger {
   background:var(--navy); border:1px solid var(--bd); border-radius:var(--rs);
-  color:var(--tp); font-family:var(--fm); font-size:16px;
+  color:var(--tp); font-family:var(--fn); font-size:16px;
   padding:10px 12px; cursor:pointer;
   display:flex; align-items:center; justify-content:space-between; gap:8px;
   width:100%; transition:border-color .2s; user-select:none;
@@ -487,6 +487,10 @@ select option { background:var(--navy); }
   min-width:280px;
 }
 .picker-popover.open { display:block; }
+.picker-popover.pop-right {
+  left: auto;
+  right: 0;
+}
 
 /* Calendar */
 .cal-header {
@@ -1328,7 +1332,7 @@ function renderAllPreviews() {
 // La carte i=0 est au sommet (premier plan), les suivantes s'empilent en dessous.
 // Le stack-inner est assez haut pour contenir toutes les cartes avec scroll si besoin.
 
-const PEEK_H = 56; // px visibles du haut de chaque carte suivante
+const PEEK_H = 64; // px visibles du haut de chaque carte suivante
 
 function renderStack() {
   const inner = document.getElementById('stackInner');
@@ -1374,7 +1378,7 @@ function renderStack() {
     // La carte 1 doit avoir son TOP à (CARD_H - PEEK_H) pour que PEEK_H px soient visibles.
     // La carte 2 doit avoir son TOP à (CARD_H - PEEK_H + PEEK_H) = CARD_H.
     // => top(i) = i===0 ? 0 : (CARD_H - PEEK_H) + (i-1)*PEEK_H
-    const topPos = i === 0 ? 0 : (CARD_H - PEEK_H) + (i - 1) * PEEK_H;
+    const topPos = (total - 1 - i) * PEEK_H;
     wrap.style.top = topPos + 'px';
     wrap.style.zIndex = (total - i) + 10; // i=0 → z max
 
@@ -1889,41 +1893,16 @@ function initPickers(cid) {
     editorState.arrival = val;
     renderAllPreviews();
   });
+  // Popover arrivée dans colonne droite : aligner à droite pour ne pas dépasser
+  const arrPop = document.getElementById('arrPop_'+cid);
+  if(arrPop) arrPop.classList.add('pop-right');
 }
 
-// Also patch syncField to update picker displays when populateForm is called
-const _origPopulateForm = populateForm;
-function populateForm(cid, p) {
-  _origPopulateForm(cid, p);
-  // Update picker trigger labels
-  if(p.tripDate) {
-    const dv = document.getElementById('dateVal_'+cid);
-    if(dv) dv.textContent = p.tripDate;
-  }
-  if(p.departure) {
-    const dv = document.getElementById('depVal_'+cid);
-    if(dv) dv.textContent = p.departure;
-  }
-  if(p.arrival) {
-    const dv = document.getElementById('arrVal_'+cid);
-    if(dv) dv.textContent = p.arrival;
-  }
-}
 
-// ── SCAN OVERLAY ANIMATIONS ──
-const _origOpenScan = openScan;
-function openScan(p) {
-  _origOpenScan(p);
-  // Force reflow for CSS transition to fire
-  const ov = document.getElementById('scanOverlay');
-  void ov.offsetWidth;
-}
 
-// ── TAB SWITCH with animation ──
-const _origSwitchTab = switchTab;
-function switchTab(tab) {
-  _origSwitchTab(tab);
-}
+
+
+
 
 </script>
 </body>
