@@ -11,15 +11,27 @@
 <title>Mon Boarding Pass</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&family=Raleway:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
 <link rel="shortcut icon" type="image/png" href="favico.ico"/>
+<link rel="apple-touch-icon" href="apple-icn.jpg">
+<link rel="apple-touch-icon" sizes="152x152" href="apple-icn.jpg">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-icn.jpg">
+<link rel="apple-touch-icon" sizes="167x167" href="apple-icn.jpg">
+
 <style>
 :root {
-  --navy:#0D1B2A; --navy-mid:#162236; --navy-light:#1E3250;
-  --accent:#5BC8F5; --accent-dim:#2A8BB5;
-  --tp:#FFFFFF; --ts:#8BAFC8; --tm:#4A6680;
-  --bd:rgba(91,200,245,0.15); --bs:rgba(91,200,245,0.3);
-  --fn:'Space Grotesk',sans-serif; --fm:'Space Mono',monospace;
+  --navy:#0D1B2A;
+  --navy-mid:#162236;
+  --navy-light:#1E3250;
+  --accent:#5BC8F5;
+  --accent-dim:#2A8BB5;
+  --tp:#FFFFFF;
+  --ts:#8BAFC8;
+  --tm:#4A6680;
+  --bd:rgba(91,200,245,0.15);
+  --bs:rgba(91,200,245,0.3);
+  --fn:'Raleway',sans-serif;
+  --fm:'Nunito Sans',sans-serif;
   --r:12px; --rs:8px;
   --tab-h:64px;
   --safe-b:env(safe-area-inset-bottom,0px);
@@ -97,7 +109,7 @@ body { background:#0A1520; color:var(--tp); font-family:var(--fn); }
 .f label { font-size:11px; font-weight:500; color:var(--ts); letter-spacing:.03em; }
 .f input, .f select {
   background:var(--navy); border:1px solid var(--bd); border-radius:var(--rs);
-  color:var(--tp); font-family:var(--fn); font-size:14px;
+  color:var(--tp); font-family:var(--fm); font-size:16px;
   padding:10px 12px; outline:none; transition:border-color .2s; width:100%;
   -webkit-appearance:none;
 }
@@ -212,7 +224,7 @@ select option { background:var(--navy); }
 .pass-sep { border:none; border-top:1px dashed rgba(255,255,255,.12); margin:12px 0; }
 .pass-header {
   display:flex; justify-content:space-between; align-items:flex-start;
-  margin-bottom:18px; margin-top:8px;
+  margin-bottom:18px; margin-top:8px; text-transform: capitalize;
 }
 .pass-logo-area { display:flex; align-items:center; gap:8px; }
 .pass-logo-img { height:26px; max-width:90px; object-fit:contain; border-radius:2px; }
@@ -229,15 +241,15 @@ select option { background:var(--navy); }
 .fsm { font-size:12px; font-weight:600; }
 .stations-row {
   display:grid; grid-template-columns:1fr 44px 1fr;
-  align-items:center; gap:4px; margin-bottom:4px; min-height:52px;
+  align-items:center; gap:4px; margin-bottom:4px; min-height:52px; text-transform: uppercase;
 }
 .sname { font-size:12px; font-weight:600; line-height:1.25; word-break:break-word; }
 .sname.right { text-align:right; }
 .train-icon-cell { display:flex; align-items:center; justify-content:center; flex-shrink:0; }
 .times-row { display:grid; grid-template-columns:1fr 1fr 1fr; gap:4px; align-items:start; }
 .tc { text-align:center; } .tr { text-align:right; }
-.pax-row { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
-.extra-row { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:8px; }
+.pax-row { display:grid; grid-template-columns:1fr 1fr; gap:8px;text-transform: uppercase; }
+.extra-row { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:8px;text-transform: capitalize; }
 .qr-section { display:flex; justify-content:center; margin-top:auto; padding-top:8px; }
 .qr-box {
   background:white; border-radius:10px; padding:10px;
@@ -342,15 +354,19 @@ select option { background:var(--navy); }
 
 /* Stack de pass style Apple Wallet */
 .passes-stack {
-  flex:1; width:100%; overflow:hidden;
-  position:relative; padding:0 20px;
+  flex:1; width:100%;
+  overflow-y:auto; overflow-x:hidden;
+  -webkit-overflow-scrolling:touch;
+  padding:0 20px 20px;
 }
+.passes-stack::-webkit-scrollbar { display:none; }
+
 .stack-inner {
-  position:relative; width:100%; height:100%;
+  position:relative; width:100%;
+  /* height set dynamically */
 }
 .pass-card-wrap {
   position:absolute; left:0; right:0;
-  transition:top .35s cubic-bezier(.34,1.2,.64,1);
   cursor:pointer;
   -webkit-tap-highlight-color:transparent;
 }
@@ -446,6 +462,167 @@ select option { background:var(--navy); }
   display:flex; align-items:center; justify-content:center;
   cursor:pointer; -webkit-tap-highlight-color:transparent;
 }
+
+/* ════════════════════════════════
+   DATE PICKER POPOVER
+════════════════════════════════ */
+.date-trigger, .time-trigger {
+  background:var(--navy); border:1px solid var(--bd); border-radius:var(--rs);
+  color:var(--tp); font-family:var(--fm); font-size:16px;
+  padding:10px 12px; cursor:pointer;
+  display:flex; align-items:center; justify-content:space-between; gap:8px;
+  width:100%; transition:border-color .2s; user-select:none;
+  -webkit-tap-highlight-color:transparent;
+}
+.date-trigger:hover, .date-trigger.open,
+.time-trigger:hover, .time-trigger.open { border-color:var(--accent-dim); }
+.dt-value { flex:1; }
+.dt-icon { color:var(--tm); font-size:14px; flex-shrink:0;height: 20px; }
+.picker-wrap { position:relative; }
+.picker-popover {
+  display:none; position:absolute; left:0; right:0; top:calc(100% + 6px);
+  z-index:400; background:#0D1B2A; border:1px solid var(--bs);
+  border-radius:var(--r); padding:16px;
+  box-shadow:0 16px 48px rgba(0,0,0,.8);
+  min-width:280px;
+}
+.picker-popover.open { display:block; }
+
+/* Calendar */
+.cal-header {
+  display:flex; align-items:center; justify-content:space-between;
+  margin-bottom:12px;
+}
+.cal-nav {
+  background:none; border:none; color:var(--accent); font-size:18px;
+  cursor:pointer; padding:4px 8px; border-radius:6px; line-height:1;
+  -webkit-tap-highlight-color:transparent;
+}
+.cal-nav:hover { background:rgba(91,200,245,.1); }
+.cal-month-label { font-size:13px; font-weight:700; color:var(--tp); }
+.cal-grid {
+  display:grid; grid-template-columns:repeat(7,1fr); gap:2px;
+}
+.cal-day-name {
+  font-size:9px; font-weight:700; text-align:center;
+  color:var(--tm); padding:4px 0; letter-spacing:.05em;
+}
+.cal-day {
+  font-size:12px; text-align:center; padding:6px 2px;
+  border-radius:6px; cursor:pointer; color:var(--tp);
+  transition:background .12s, color .12s;
+  -webkit-tap-highlight-color:transparent;
+}
+.cal-day:hover { background:rgba(91,200,245,.15); }
+.cal-day.other-month { color:var(--tm); }
+.cal-day.today { color:var(--accent); font-weight:700; }
+.cal-day.selected { background:var(--accent); color:var(--navy); font-weight:700; }
+.cal-day.empty { cursor:default; }
+
+/* Time drum / wheel picker */
+.time-drums {
+  display:flex; align-items:center; justify-content:center; gap:0;
+}
+.drum-wrap {
+  display:flex; flex-direction:column; align-items:center; gap:4px;
+}
+.drum-label {
+  font-size:9px; font-weight:700; letter-spacing:.08em;
+  text-transform:uppercase; color:var(--tm);
+}
+.drum {
+  width:72px; height:160px; overflow:hidden;
+  position:relative; cursor:grab;
+  -webkit-tap-highlight-color:transparent;
+}
+.drum:active { cursor:grabbing; }
+.drum-inner {
+  display:flex; flex-direction:column;
+  transition:transform .18s cubic-bezier(.25,.46,.45,.94);
+}
+.drum-item {
+  height:40px; display:flex; align-items:center; justify-content:center;
+  font-family:var(--fm); font-size:22px; font-weight:700;
+  color:var(--tm); transition:color .12s, transform .12s;
+  flex-shrink:0;
+}
+.drum-item.active {
+  color:var(--tp); transform:scale(1.15);
+}
+.drum-separator {
+  font-family:var(--fm); font-size:28px; font-weight:700;
+  color:var(--accent); align-self:center; padding:0 2px; margin-bottom:20px;
+}
+/* Selection highlight band */
+.drum::before, .drum::after {
+  content:''; position:absolute; left:0; right:0; z-index:2; pointer-events:none;
+}
+.drum::before {
+  top:0; height:60px;
+  background:linear-gradient(to bottom, #0D1B2A, transparent);
+}
+.drum::after {
+  bottom:0; height:60px;
+  background:linear-gradient(to top, #0D1B2A, transparent);
+}
+.drum-highlight {
+  position:absolute; top:50%; left:4px; right:4px;
+  height:40px; transform:translateY(-50%);
+  border:1px solid var(--bs); border-radius:8px;
+  background:rgba(91,200,245,.08); pointer-events:none; z-index:1;
+}
+.time-confirm {
+  margin-top:14px; width:100%;
+  background:var(--accent); color:var(--navy);
+  border:none; border-radius:var(--rs);
+  font-family:var(--fn); font-size:14px; font-weight:700;
+  padding:10px; cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+}
+
+/* ════════════════════════════════
+   ANIMATIONS
+════════════════════════════════ */
+/* Tab switch fade */
+.view {
+  transition:opacity .22s ease, transform .22s cubic-bezier(.4,0,.2,1);
+}
+.view:not(.active) { opacity:0; transform:translateY(6px); pointer-events:none; }
+.view.active { opacity:1; transform:translateY(0); }
+
+/* Scan overlay entrance */
+#scanOverlay {
+  transition:opacity .28s ease;
+  opacity:0;
+}
+#scanOverlay.active { opacity:1; }
+#scanOverlay .wallet-pass {
+  transition:filter .3s, transform .3s cubic-bezier(.34,1.2,.64,1);
+  transform:scale(.96) translateY(12px);
+}
+#scanOverlay.active .wallet-pass { transform:scale(1) translateY(0); }
+
+/* Pass card tap feedback */
+.pass-card-wrap {
+  transition:top .4s cubic-bezier(.34,1.2,.64,1), transform .15s ease, opacity .3s;
+}
+.pass-card-wrap:active { transform:scale(.985); }
+
+/* Save button success pulse */
+@keyframes successPulse {
+  0%   { box-shadow:0 0 0 0 rgba(91,200,245,.5); }
+  70%  { box-shadow:0 0 0 10px rgba(91,200,245,0); }
+  100% { box-shadow:0 0 0 0 rgba(91,200,245,0); }
+}
+.save-btn.success { animation:successPulse .6s ease; }
+
+/* Stack card entrance */
+@keyframes cardSlideIn {
+  from { opacity:0; transform:translateY(-16px) scale(.97); }
+  to   { opacity:1; transform:translateY(0) scale(1); }
+}
+.pass-card-wrap { animation:cardSlideIn .3s ease both; }
+
 </style>
 </head>
 <body>
@@ -785,10 +962,139 @@ function buildFormHTML(containerId, saveCallback) {
           <div class="f"><label>Gare de départ</label><input type="text" id="origin_${containerId}" placeholder="MILLAU" oninput="syncField('origin','${containerId}')"></div>
           <div class="f"><label>Gare d'arrivée</label><input type="text" id="destination_${containerId}" placeholder="BÉZIERS" oninput="syncField('destination','${containerId}')"></div>
         </div>
-        <div class="f"><label>Date du voyage</label><input type="text" id="tripDate_${containerId}" placeholder="19/06/2026" oninput="syncField('tripDate','${containerId}')"></div>
+        <div class="f">
+          <label>Date du voyage</label>
+          <div class="picker-wrap" id="dateWrap_${containerId}">
+            <div class="date-trigger" id="dateTrig_${containerId}">
+              <span class="dt-value" id="dateVal_${containerId}">Choisir une date</span>
+              <svg class="dt-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Anneaux -->
+  <line x1="8" y1="1.5" x2="8" y2="6.5"
+        stroke="currentColor" stroke-width="2"
+        stroke-linecap="round"/>
+
+  <line x1="16" y1="1.5" x2="16" y2="6.5"
+        stroke="currentColor" stroke-width="2"
+        stroke-linecap="round"/>
+
+  <!-- Cadre -->
+  <rect x="3" y="4" width="18" height="17" rx="3"
+        stroke="currentColor" stroke-width="2"/>
+
+  <!-- Barre supérieure -->
+  <line x1="3" y1="9" x2="21" y2="9"
+        stroke="currentColor" stroke-width="2"/>
+
+  <!-- Ligne 1 -->
+  <rect x="7" y="12" width="2" height="2" rx=".5"
+        fill="currentColor"/>
+  <rect x="11" y="12" width="2" height="2" rx=".5"
+        fill="currentColor"/>
+  <rect x="15" y="12" width="2" height="2" rx=".5"
+        fill="currentColor"/>
+
+  <!-- Ligne 2 -->
+  <rect x="7" y="16" width="2" height="2" rx=".5"
+        fill="currentColor"/>
+  <rect x="11" y="16" width="2" height="2" rx=".5"
+        fill="currentColor"/>
+  <rect x="15" y="16" width="2" height="2" rx=".5"
+        fill="currentColor"/>
+</svg>
+            </div>
+            <div class="picker-popover" id="datePop_${containerId}">
+              <div class="cal-header">
+                <button class="cal-nav" id="calPrev_${containerId}">‹</button>
+                <span class="cal-month-label" id="calLabel_${containerId}"></span>
+                <button class="cal-nav" id="calNext_${containerId}">›</button>
+              </div>
+              <div class="cal-grid" id="calGrid_${containerId}"></div>
+            </div>
+          </div>
+        </div>
         <div class="fr">
-          <div class="f"><label>Départ</label><input type="text" id="departure_${containerId}" placeholder="12:09" oninput="syncField('departure','${containerId}')"></div>
-          <div class="f"><label>Arrivée</label><input type="text" id="arrival_${containerId}" placeholder="16:23" oninput="syncField('arrival','${containerId}')"></div>
+          <div class="f">
+            <label>Heure de départ</label>
+            <div class="picker-wrap" id="depWrap_${containerId}">
+              <div class="time-trigger" id="depTrig_${containerId}">
+                <span class="dt-value" id="depVal_${containerId}">--:--</span>
+                <svg class="dt-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/>
+
+  <line x1="12" y1="12" x2="12" y2="7"
+        stroke="currentColor" stroke-width="2"
+        stroke-linecap="round"/>
+
+  <line x1="12" y1="12" x2="16" y2="14"
+        stroke="currentColor" stroke-width="2"
+        stroke-linecap="round"/>
+
+  <circle cx="12" cy="12" r="1.2" fill="currentColor"/>
+</svg>
+              </div>
+              <div class="picker-popover" id="depPop_${containerId}">
+                <div class="time-drums">
+                  <div class="drum-wrap">
+                    <div class="drum-label">H</div>
+                    <div class="drum" id="depDrumH_${containerId}">
+                      <div class="drum-highlight"></div>
+                      <div class="drum-inner" id="depDrumHInner_${containerId}"></div>
+                    </div>
+                  </div>
+                  <div class="drum-separator">:</div>
+                  <div class="drum-wrap">
+                    <div class="drum-label">MIN</div>
+                    <div class="drum" id="depDrumM_${containerId}">
+                      <div class="drum-highlight"></div>
+                      <div class="drum-inner" id="depDrumMInner_${containerId}"></div>
+                    </div>
+                  </div>
+                </div>
+                <button class="time-confirm" id="depConfirm_${containerId}">Confirmer</button>
+              </div>
+            </div>
+          </div>
+          <div class="f">
+            <label>Heure d'arrivée</label>
+            <div class="picker-wrap" id="arrWrap_${containerId}">
+              <div class="time-trigger" id="arrTrig_${containerId}">
+                <span class="dt-value" id="arrVal_${containerId}">--:--</span>
+                <svg class="dt-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/>
+
+  <line x1="12" y1="12" x2="12" y2="7"
+        stroke="currentColor" stroke-width="2"
+        stroke-linecap="round"/>
+
+  <line x1="12" y1="12" x2="16" y2="14"
+        stroke="currentColor" stroke-width="2"
+        stroke-linecap="round"/>
+
+  <circle cx="12" cy="12" r="1.2" fill="currentColor"/>
+</svg>
+              </div>
+              <div class="picker-popover" id="arrPop_${containerId}">
+                <div class="time-drums">
+                  <div class="drum-wrap">
+                    <div class="drum-label">H</div>
+                    <div class="drum" id="arrDrumH_${containerId}">
+                      <div class="drum-highlight"></div>
+                      <div class="drum-inner" id="arrDrumHInner_${containerId}"></div>
+                    </div>
+                  </div>
+                  <div class="drum-separator">:</div>
+                  <div class="drum-wrap">
+                    <div class="drum-label">MIN</div>
+                    <div class="drum" id="arrDrumM_${containerId}">
+                      <div class="drum-highlight"></div>
+                      <div class="drum-inner" id="arrDrumMInner_${containerId}"></div>
+                    </div>
+                  </div>
+                </div>
+                <button class="time-confirm" id="arrConfirm_${containerId}">Confirmer</button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -807,18 +1113,18 @@ function buildFormHTML(containerId, saveCallback) {
       <div class="sec-title">Champs optionnels</div>
       <div class="fg">
         <div class="fr">
-          <div class="f"><label>Voiture</label><input type="text" id="carriage_${containerId}" placeholder="Ex : 12" oninput="syncField('carriage','${containerId}')"></div>
-          <div class="f"><label>Siège</label><input type="text" id="seat_${containerId}" placeholder="Ex : 47" oninput="syncField('seat','${containerId}')"></div>
+          <div class="f"><label>Voiture</label><input type="text" id="carriage_${containerId}" placeholder="12" oninput="syncField('carriage','${containerId}')"></div>
+          <div class="f"><label>Siège</label><input type="text" id="seat_${containerId}" placeholder="47" oninput="syncField('seat','${containerId}')"></div>
         </div>
         <div class="fr">
           <div class="f"><label>Classe</label>
             <select id="classType_${containerId}" onchange="syncField('classType','${containerId}')">
               <option value="">—</option>
               <option value="1re classe">1re classe</option>
-              <option value="2e classe">2nde classe</option>
+              <option value="2nde classe">2nde classe</option>
             </select>
           </div>
-          <div class="f"><label>Tarif</label><input type="text" id="tariff_${containerId}" placeholder="Ex : Loisir" oninput="syncField('tariff','${containerId}')"></div>
+          <div class="f"><label>Tarif</label><input type="text" id="tariff_${containerId}" placeholder="Avantage Jeune" oninput="syncField('tariff','${containerId}')"></div>
         </div>
       </div>
     </div>
@@ -879,10 +1185,11 @@ function buildFormHTML(containerId, saveCallback) {
         </div>
       </div>
     </div>
-    <button class="save-btn" onclick="${saveCallback}">💾 Enregistrer ce pass</button>
+    <button class="save-btn" onclick="${saveCallback}">Enregistrer et sauvegarder</button>
     <div style="height:16px;"></div>
   `;
   buildGridsFor(containerId);
+  initPickers(containerId);
 }
 
 function buildGridsFor(cid) {
@@ -946,10 +1253,7 @@ function closeAllPopovers() {
   document.querySelectorAll('.color-trigger.open').forEach(t => t.classList.remove('open'));
 }
 
-// Close on outside click — phase bubble (pas capture) pour ne pas interférer avec onclick
-document.addEventListener('click', e => {
-  if(!e.target.closest('.color-picker-wrap')) closeAllPopovers();
-});
+// Close on outside click (color popovers) — handled jointly with picker close in picker JS
 
 // ═══════════════════════════════════════════════════════
 //  FIELD SYNC (editor → editorState → preview)
@@ -1020,25 +1324,59 @@ function renderAllPreviews() {
 // ═══════════════════════════════════════════════════════
 //  WALLET STACK RENDERING
 // ═══════════════════════════════════════════════════════
-const PEEK_H = 48; // px du haut de chaque carte visible sous celle du dessus
+// Chaque carte montre PEEK_H px de son haut sous la carte du dessus.
+// La carte i=0 est au sommet (premier plan), les suivantes s'empilent en dessous.
+// Le stack-inner est assez haut pour contenir toutes les cartes avec scroll si besoin.
 
-function buildCards(availH) {
+const PEEK_H = 56; // px visibles du haut de chaque carte suivante
+
+function renderStack() {
   const inner = document.getElementById('stackInner');
-  const hint  = document.getElementById('stackHint');
-  const total = passes.length;
+  if(!inner) return;
+
+  if(!passes.length) {
+    document.getElementById('emptyState').style.display = 'flex';
+    document.getElementById('passesStack').style.display = 'none';
+    document.getElementById('manageBar').style.display = 'none';
+    document.getElementById('passCountLabel').textContent = 'Aucun pass enregistré';
+    inner.innerHTML = '';
+    return;
+  }
+
+  document.getElementById('emptyState').style.display = 'none';
+  document.getElementById('passesStack').style.display = 'block';
+  document.getElementById('manageBar').style.display = 'flex';
+  document.getElementById('passCountLabel').textContent =
+    passes.length === 1 ? '1 pass enregistré' : passes.length + ' pass enregistrés';
+
   inner.innerHTML = '';
+
+  const total = passes.length;
+  // Estimated card height for layout purposes
+  const CARD_H = 520;
+
+  // Total scroll height: first card full + each extra card contributes PEEK_H
+  inner.style.height = (CARD_H + (total - 1) * PEEK_H) + 'px';
 
   passes.forEach((p, i) => {
     const wrap = document.createElement('div');
     wrap.className = 'pass-card-wrap' + (editMode ? ' edit-mode' : '');
     wrap.id = 'card_' + p.id;
+    // Stagger animation
+    wrap.style.animationDelay = (i * 60) + 'ms';
 
-    // i=0 : carte au premier plan, top=0, z max
-    // i>0 : seul PEEK_H px de son haut dépasse sous la carte précédente
-    // top(i) = availH - PEEK_H * (total - i)
-    const topPos = i === 0 ? 0 : availH - PEEK_H * (total - i);
-    wrap.style.top = Math.max(0, topPos) + 'px';
-    wrap.style.zIndex = (total - i) + 10;
+    // i=0 → top:0 (premier plan, z le plus élevé)
+    // i=1 → top: CARD_H - PEEK_H  (son haut dépasse de PEEK_H sous la carte 0)
+    // i=2 → top: CARD_H - PEEK_H + PEEK_H = CARD_H  etc.
+    // Simplifié : top(i) = i===0 ? 0 : CARD_H - PEEK_H + (i-1)*PEEK_H = CARD_H + (i-1)*PEEK_H - PEEK_H
+    // = CARD_H - PEEK_H*(2-i) ... non.
+    // Logique : la carte 0 occupe [0, CARD_H].
+    // La carte 1 doit avoir son TOP à (CARD_H - PEEK_H) pour que PEEK_H px soient visibles.
+    // La carte 2 doit avoir son TOP à (CARD_H - PEEK_H + PEEK_H) = CARD_H.
+    // => top(i) = i===0 ? 0 : (CARD_H - PEEK_H) + (i-1)*PEEK_H
+    const topPos = i === 0 ? 0 : (CARD_H - PEEK_H) + (i - 1) * PEEK_H;
+    wrap.style.top = topPos + 'px';
+    wrap.style.zIndex = (total - i) + 10; // i=0 → z max
 
     const passDiv = document.createElement('div');
     passDiv.className = 'wallet-pass';
@@ -1053,23 +1391,22 @@ function buildCards(availH) {
 
     const editBtn = document.createElement('button');
     editBtn.style.cssText = 'position:absolute;top:8px;left:8px;z-index:10;background:rgba(91,200,245,.85);color:#0D1B2A;border:none;border-radius:50%;width:26px;height:26px;font-size:12px;cursor:pointer;display:none;align-items:center;justify-content:center;';
-    editBtn.innerHTML = `<svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M8.5 1.5L11.5 4.5L4 12H1V9L8.5 1.5Z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg>`;
+    editBtn.innerHTML = '<svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M8.5 1.5L11.5 4.5L4 12H1V9L8.5 1.5Z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg>';
     editBtn.addEventListener('click', (e) => { e.stopPropagation(); editPass(p.id); });
     if(editMode) editBtn.style.display = 'flex';
     wrap.appendChild(editBtn);
 
     const delBtn = document.createElement('button');
     delBtn.className = 'pass-delete-btn';
-    delBtn.innerHTML = '\u00d7';
+    delBtn.innerHTML = '×';
     delBtn.addEventListener('click', (e) => { e.stopPropagation(); deletePass(p.id); });
     wrap.appendChild(delBtn);
 
     wrap.appendChild(passDiv);
     inner.appendChild(wrap);
 
-    // Cartes du dessous : tap sur la bande visible = amener au premier plan
+    // Cartes i>0 : tap sur la bande visible = amener au premier plan
     if(i > 0) {
-      wrap.style.cursor = 'pointer';
       wrap.addEventListener('click', () => {
         if(editMode) return;
         const idx = passes.findIndex(x => x.id === p.id);
@@ -1082,38 +1419,12 @@ function buildCards(availH) {
     }
   });
 
+  const hint = document.getElementById('stackHint');
   if(hint) {
     hint.textContent = passes.length === 1
-      ? "Appuie sur le pass pour l\u2019afficher"
-      : "Appuie sur une carte du dessous pour la s\u00e9lectionner";
+      ? "Appuie sur le pass pour l'afficher"
+      : "Appuie sur une carte en dessous pour la sélectionner";
   }
-}
-
-function renderStack() {
-  const inner = document.getElementById('stackInner');
-  if(!inner) return;
-  inner.innerHTML = '';
-
-  if(!passes.length) {
-    document.getElementById('emptyState').style.display = 'flex';
-    document.getElementById('passesStack').style.display = 'none';
-    document.getElementById('manageBar').style.display = 'none';
-    document.getElementById('passCountLabel').textContent = 'Aucun pass enregistr\u00e9';
-    return;
-  }
-
-  document.getElementById('emptyState').style.display = 'none';
-  document.getElementById('passesStack').style.display = 'block';
-  document.getElementById('manageBar').style.display = 'flex';
-  document.getElementById('passCountLabel').textContent =
-    passes.length === 1 ? '1 pass enregistr\u00e9' : `${passes.length} pass enregistr\u00e9s`;
-
-  // requestAnimationFrame : offsetHeight fiable après le paint
-  requestAnimationFrame(() => {
-    const stackEl = document.getElementById('passesStack');
-    const availH = stackEl ? stackEl.offsetHeight : window.innerHeight - 200;
-    buildCards(availH);
-  });
 }
 
 // ═══════════════════════════════════════════════════════
@@ -1357,6 +1668,263 @@ function init() {
 }
 
 init();
+
+// ═══════════════════════════════════════════════════════
+//  DATE + TIME PICKERS
+// ═══════════════════════════════════════════════════════
+
+// Close all pickers + color popovers on outside tap
+document.addEventListener('click', e => {
+  if(!e.target.closest('.picker-wrap') && !e.target.closest('.color-picker-wrap')) {
+    closeAllPopovers();
+    closeAllPickers();
+  }
+});
+
+function closeAllPickers() {
+  document.querySelectorAll('.picker-popover.open').forEach(p => p.classList.remove('open'));
+  document.querySelectorAll('.date-trigger.open, .time-trigger.open').forEach(t => t.classList.remove('open'));
+}
+
+// ── CALENDAR ──
+const CAL_MONTHS_FR = ['Janvier','Février','Mars','Avril','Mai','Juin',
+  'Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+const CAL_DAYS_FR = ['Lu','Ma','Me','Je','Ve','Sa','Di'];
+
+function initCalendar(cid) {
+  const now = new Date();
+  let viewY = now.getFullYear(), viewM = now.getMonth();
+  let selDay = null, selM = null, selY = null;
+
+  // Parse existing value
+  const existingVal = editorState.tripDate || '';
+  if(existingVal && existingVal.match(/^\d{2}\/\d{2}\/\d{4}$/)) {
+    const [d,m,y] = existingVal.split('/');
+    selDay = parseInt(d); selM = parseInt(m)-1; selY = parseInt(y);
+    viewM = selM; viewY = selY;
+    document.getElementById('dateVal_'+cid).textContent = existingVal;
+  }
+
+  function renderCal() {
+    document.getElementById('calLabel_'+cid).textContent = CAL_MONTHS_FR[viewM] + ' ' + viewY;
+    const grid = document.getElementById('calGrid_'+cid);
+    grid.innerHTML = '';
+    CAL_DAYS_FR.forEach(d => {
+      const dn = document.createElement('div');
+      dn.className = 'cal-day-name'; dn.textContent = d;
+      grid.appendChild(dn);
+    });
+    const first = new Date(viewY, viewM, 1);
+    // Monday-based: 0=Mon,6=Sun
+    let startDow = (first.getDay() + 6) % 7;
+    // Prev month padding
+    const prevDays = new Date(viewY, viewM, 0).getDate();
+    for(let i=0;i<startDow;i++){
+      const el=document.createElement('div');
+      el.className='cal-day other-month';
+      el.textContent=prevDays-startDow+1+i;
+      grid.appendChild(el);
+    }
+    const daysInMonth = new Date(viewY, viewM+1, 0).getDate();
+    const todayD=now.getDate(),todayM=now.getMonth(),todayY=now.getFullYear();
+    for(let d=1;d<=daysInMonth;d++){
+      const el=document.createElement('div');
+      el.className='cal-day';
+      if(d===todayD&&viewM===todayM&&viewY===todayY) el.classList.add('today');
+      if(selDay===d&&selM===viewM&&selY===viewY) el.classList.add('selected');
+      el.textContent=d;
+      el.addEventListener('click', () => {
+        selDay=d; selM=viewM; selY=viewY;
+        const ds=String(d).padStart(2,'0');
+        const ms=String(viewM+1).padStart(2,'0');
+        const fmt=ds+'/'+ms+'/'+viewY;
+        editorState.tripDate=fmt;
+        document.getElementById('dateVal_'+cid).textContent=fmt;
+        syncField('tripDate', cid);
+        // Visual feedback before close
+        renderCal();
+        setTimeout(()=>closeAllPickers(), 180);
+      });
+      grid.appendChild(el);
+    }
+    // Fill rest
+    const filled = startDow+daysInMonth;
+    const remaining = filled % 7 === 0 ? 0 : 7 - (filled%7);
+    for(let i=1;i<=remaining;i++){
+      const el=document.createElement('div');
+      el.className='cal-day other-month'; el.textContent=i;
+      grid.appendChild(el);
+    }
+  }
+
+  document.getElementById('calPrev_'+cid).addEventListener('click', e => {
+    e.stopPropagation();
+    viewM--; if(viewM<0){viewM=11;viewY--;}
+    renderCal();
+  });
+  document.getElementById('calNext_'+cid).addEventListener('click', e => {
+    e.stopPropagation();
+    viewM++; if(viewM>11){viewM=0;viewY++;}
+    renderCal();
+  });
+
+  const trig = document.getElementById('dateTrig_'+cid);
+  trig.addEventListener('click', () => {
+    const pop = document.getElementById('datePop_'+cid);
+    const isOpen = pop.classList.contains('open');
+    closeAllPickers(); closeAllPopovers();
+    if(!isOpen){ pop.classList.add('open'); trig.classList.add('open'); renderCal(); }
+  });
+}
+
+// ── TIME DRUM ──
+function initTimeDrum(prefix, cid, onConfirm) {
+  const HOURS   = Array.from({length:24},(_,i)=>String(i).padStart(2,'0'));
+  const MINUTES = Array.from({length:60},(_,i)=>String(i).padStart(2,'0'));
+
+  function buildDrum(drumId, innerId, items, initIdx) {
+    const inner = document.getElementById(innerId);
+    // Triple the items for infinite-feel scroll
+    inner.innerHTML = '';
+    const ITEM_H = 40;
+    // We need padding top/bottom = 2 items
+    const PAD = 2;
+
+    // Build: PAD empties + items + PAD empties
+    const buildSet = () => items.map(v => {
+      const el=document.createElement('div');
+      el.className='drum-item'; el.textContent=v; return el;
+    });
+    // Add paddings
+    for(let i=0;i<PAD;i++){
+      const el=document.createElement('div');
+      el.className='drum-item'; el.textContent=''; inner.appendChild(el);
+    }
+    buildSet().forEach(el=>inner.appendChild(el));
+    for(let i=0;i<PAD;i++){
+      const el=document.createElement('div');
+      el.className='drum-item'; el.textContent=''; inner.appendChild(el);
+    }
+
+    let currentIdx = initIdx;
+
+    function setIndex(idx, animate=true) {
+      currentIdx = ((idx % items.length) + items.length) % items.length;
+      const offset = -(currentIdx * ITEM_H) - (ITEM_H / 2);
+      inner.style.transition = animate ? 'transform .18s cubic-bezier(.25,.46,.45,.94)' : 'none';
+      inner.style.transform = 'translateY(' + offset + 'px)';
+      // Update active
+      const allItems = inner.querySelectorAll('.drum-item');
+      allItems.forEach((el,i)=>{
+        el.classList.toggle('active', i === currentIdx+PAD);
+      });
+    }
+    setIndex(initIdx, false);
+
+    // Touch/mouse drag
+    let startY=0, startIdx=0, dragging=false;
+    const drum = document.getElementById(drumId);
+
+    function onStart(y){startY=y;startIdx=currentIdx;dragging=true;}
+    function onMove(y){
+      if(!dragging)return;
+      const delta=Math.round((startY-y)/ITEM_H);
+      setIndex(startIdx+delta);
+    }
+    function onEnd(){dragging=false;}
+
+    drum.addEventListener('touchstart',e=>{onStart(e.touches[0].clientY);},{passive:true});
+    drum.addEventListener('touchmove',e=>{onMove(e.touches[0].clientY);},{passive:true});
+    drum.addEventListener('touchend',onEnd);
+    drum.addEventListener('mousedown',e=>{onStart(e.clientY);});
+    drum.addEventListener('mousemove',e=>{if(dragging)onMove(e.clientY);});
+    drum.addEventListener('mouseup',onEnd);
+    drum.addEventListener('mouseleave',onEnd);
+
+    // Click items
+    inner.querySelectorAll('.drum-item').forEach((el,i)=>{
+      el.addEventListener('click',()=>setIndex(i-PAD));
+    });
+
+    return { getValue:()=>items[currentIdx], setIdx:setIndex };
+  }
+
+  // Parse existing time
+  const existingTime = prefix==='dep' ? (editorState.departure||'') : (editorState.arrival||'');
+  let initH=8, initM=0;
+  if(existingTime.match(/^\d{2}:\d{2}$/)){
+    const [h,m]=existingTime.split(':');
+    initH=parseInt(h); initM=parseInt(m);
+  }
+  const valEl   = document.getElementById(prefix+'Val_'+cid);
+  if(existingTime) valEl.textContent = existingTime;
+
+  const drumH = buildDrum(prefix+'DrumH_'+cid, prefix+'DrumHInner_'+cid, HOURS, initH);
+  const drumM = buildDrum(prefix+'DrumM_'+cid, prefix+'DrumMInner_'+cid, MINUTES, initM);
+
+  const trig = document.getElementById(prefix+'Trig_'+cid);
+  trig.addEventListener('click', () => {
+    const pop = document.getElementById(prefix+'Pop_'+cid);
+    const isOpen = pop.classList.contains('open');
+    closeAllPickers(); closeAllPopovers();
+    if(!isOpen){ pop.classList.add('open'); trig.classList.add('open'); }
+  });
+
+  document.getElementById(prefix+'Confirm_'+cid).addEventListener('click', e => {
+    e.stopPropagation();
+    const val = drumH.getValue() + ':' + drumM.getValue();
+    valEl.textContent = val;
+    onConfirm(val);
+    closeAllPickers();
+  });
+}
+
+function initPickers(cid) {
+  initCalendar(cid);
+  initTimeDrum('dep', cid, (val) => {
+    editorState.departure = val;
+    renderAllPreviews();
+  });
+  initTimeDrum('arr', cid, (val) => {
+    editorState.arrival = val;
+    renderAllPreviews();
+  });
+}
+
+// Also patch syncField to update picker displays when populateForm is called
+const _origPopulateForm = populateForm;
+function populateForm(cid, p) {
+  _origPopulateForm(cid, p);
+  // Update picker trigger labels
+  if(p.tripDate) {
+    const dv = document.getElementById('dateVal_'+cid);
+    if(dv) dv.textContent = p.tripDate;
+  }
+  if(p.departure) {
+    const dv = document.getElementById('depVal_'+cid);
+    if(dv) dv.textContent = p.departure;
+  }
+  if(p.arrival) {
+    const dv = document.getElementById('arrVal_'+cid);
+    if(dv) dv.textContent = p.arrival;
+  }
+}
+
+// ── SCAN OVERLAY ANIMATIONS ──
+const _origOpenScan = openScan;
+function openScan(p) {
+  _origOpenScan(p);
+  // Force reflow for CSS transition to fire
+  const ov = document.getElementById('scanOverlay');
+  void ov.offsetWidth;
+}
+
+// ── TAB SWITCH with animation ──
+const _origSwitchTab = switchTab;
+function switchTab(tab) {
+  _origSwitchTab(tab);
+}
+
 </script>
 </body>
 </html>
